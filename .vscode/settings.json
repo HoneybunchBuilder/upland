@@ -1,0 +1,14 @@
+{
+  "files.associations": {
+    "*.rt": "hlsl",
+    "*.hlsl": "c",
+    "*.hlsli": "c",
+    "*.hlsl.cs": "c",
+    "*.hlsl.m": "c",
+  },
+  "cmake.configureOnOpen": false,
+  "cmake.useCMakePresets": "auto",
+  "C_Cpp.formatting": "clangFormat",
+  "C_Cpp.intelliSenseEngine": "default",
+  "C_Cpp.errorSquiggles": "disabled",
+}

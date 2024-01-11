@@ -1,0 +1,13 @@
+[Bb]uild*/*
+[Ii]nstall/*
+out/*
+
+*.blend1
+
+.vscode/c_cpp_properties.json
+.vs/
+
+.DS_Store
+
+CMakeUserPresets.json
+vcpkg_installed/*

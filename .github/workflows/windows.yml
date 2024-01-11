@@ -1,0 +1,56 @@
+name: Windows
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+  repository_dispatch:
+    types: [windows-engine]
+
+jobs:
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        toolsets: [
+          {host: [Windows, X64, self-hosted], preset: x64-windows-ninja-llvm},
+          {host: [Windows, X64, self-hosted], preset: x64-windows-static-ninja-llvm},
+          {host: [Windows, X64, self-hosted], preset: x64-windows-vs2022-llvm},
+          {host: [Windows, X64, self-hosted], preset: x64-windows-static-vs2022-llvm},
+        ]
+
+    name: ${{matrix.toolsets.preset}} on ${{matrix.toolsets.host[0]}}
+    runs-on: ${{matrix.toolsets.host}}
+
+    steps:
+    - name: Clone Upland
+      uses: actions/checkout@v3
+      with:
+        lfs: 'true'
+        path: ./upland
+
+    - name: Clone Toybox
+      uses: actions/checkout@v3
+      with:
+        repository: HoneybunchBuilder/toybox
+        lfs: 'true'
+        path: ./toybox
+
+    - name: Configure
+      working-directory: ./upland
+      run: cmake --preset ${{matrix.toolsets.preset}} -DCOOK_ASSETS=OFF
+
+    - name: Build Debug
+      working-directory: ./upland
+      run: cmake --build --preset debug-${{matrix.toolsets.preset}}
+
+    - name: Build RelWithDebInfo
+      working-directory: ./upland
+      run: cmake --build --preset relwithdebinfo-${{matrix.toolsets.preset}}
+
+    - name: Build Release
+      working-directory: ./upland
+      run: cmake --build --preset release-${{matrix.toolsets.preset}}

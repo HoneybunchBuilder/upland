@@ -1,0 +1,19 @@
+{
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "../toybox"
+    },
+    {
+      "path": "../toybox-blender"
+    }
+  ],
+  "settings": {
+    "files.associations": {
+      "*.rt": "hlsl",
+      "*.hlsli": "cpp",
+    }
+  }
+}
