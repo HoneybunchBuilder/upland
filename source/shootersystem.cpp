@@ -23,19 +23,35 @@
 #include <flecs.h>
 #include <json.h>
 
-void warp_trigger_callback(ecs_world_t *world, ecs_entity_t user_e,
-                           ecs_entity_t other_e) {
+void warp_trigger(ecs_world_t *world, ecs_entity_t user_e,
+                  ecs_entity_t other_e) {
   flecs::world ecs(world);
   if (ecs.entity(user_e).has<UplWarp>()) {
     auto other = ecs.entity(other_e);
     if (auto other_parent = other.parent()) {
-      if (other_parent.has<UplShooterComponent>()) {
+      if (other_parent.has<UplShooter>()) {
         // YAY
         // TODO: Unimplemented
       }
     }
   }
 };
+
+void projectile_contact(ecs_world_t *world, ecs_entity_t user_e,
+                        ecs_entity_t other_e) {
+  (void)other_e;
+  flecs::world ecs(world);
+  auto user = ecs.entity(user_e);
+
+  if (!user.is_valid() || !user.has<UplProjectile>()) {
+    return;
+  }
+
+  // Remove the entity when it collides with anything
+  ecs.defer_begin();
+  user.destruct();
+  ecs.defer_end();
+}
 
 bool create_shooter_components(ecs_world_t *world, ecs_entity_t e,
                                const char *source_path, const cgltf_node *node,
@@ -56,13 +72,13 @@ bool create_shooter_components(ecs_world_t *world, ecs_entity_t e,
   auto ent = ecs.entity(e);
 
   if (SDL_strcmp(id_str, "shooter") == 0) {
-    UplShooterComponent comp = {};
+    UplShooter comp = {};
     if (auto proj_obj = json_object_object_get(extra, "projectile")) {
       if (auto name_obj = json_object_object_get(proj_obj, "name")) {
         comp.prefab_name = json_object_get_string(name_obj);
       }
     }
-    ent.set<UplShooterComponent>(comp);
+    ent.set<UplShooter>(comp);
   } else if (SDL_strcmp(id_str, "projectile") == 0) {
     // Tag the entity as being a projectile
     ent.add<UplProjectile>();
@@ -80,27 +96,44 @@ bool create_shooter_components(ecs_world_t *world, ecs_entity_t e,
 }
 
 void post_load_shooter_components(ecs_world_t *world, ecs_entity_t e) {
-
   flecs::world ecs(world);
 
   auto phys_sys = ecs.get_mut<TbPhysicsSystem>();
   auto entity = ecs.entity(e);
 
-  if (entity.has<UplShooterComponent>()) {
-    auto shooter = entity.get_mut<UplShooterComponent>();
+  if (entity.has<UplShooter>()) {
+    auto shooter = entity.get_mut<UplShooter>();
     shooter->projectile_prefab = ecs.lookup(shooter->prefab_name);
   }
   if (entity.has<UplWarp>()) {
-    tb_phys_add_contact_callback(phys_sys, e, warp_trigger_callback);
+    tb_phys_add_contact_callback(phys_sys, e, warp_trigger);
   }
 }
 
 void remove_shooter_components(ecs_world_t *world) {
   flecs::world ecs(world);
-  ecs.remove_all<UplShooterComponent>();
+  ecs.remove_all<UplShooter>();
 }
 
-void shooter_tick(flecs::iter &it, UplShooterComponent *shooters,
+void projectile_lifetime_tick(flecs::iter &it, UplProjectile *projectiles) {
+  ZoneScopedN("Projectile Expiration");
+  auto ecs = it.world();
+
+  for (auto i : it) {
+    auto ent = it.entity(i);
+    if (!ent.is_valid()) {
+      continue;
+    }
+    auto &proj = projectiles[i];
+
+    proj.lifetime -= it.delta_time();
+    if (proj.lifetime <= 0.0f) {
+      ent.destruct();
+    }
+  }
+}
+
+void shooter_tick(flecs::iter &it, UplShooter *shooters,
                   TbTransformComponent *transforms) {
   (void)transforms;
   ZoneScopedN("Shooter Update Tick");
@@ -162,20 +195,29 @@ void shooter_tick(flecs::iter &it, UplShooterComponent *shooters,
         float radius = 0.25f;
         auto shape = JPH::SphereShapeSettings(radius).Create().Get();
 
+        // TODO: This sucks, we shouldn't have to care about impl details here
         JPH::BodyCreationSettings settings(
             shape, JPH::Vec3(pos.x, pos.y, pos.z), JPH::Quat::sIdentity(),
             JPH::EMotionType::Dynamic, Layers::MOVING);
+        settings.mUserData = (uint64_t)clone.raw_id();
 
         auto body =
-            bodies.CreateAndAddBody(settings, JPH::EActivation::Activate);
+            bodies.CreateAndAddBody(settings, JPH::EActivation::DontActivate);
         TbRigidbodyComponent comp = {body.GetIndexAndSequenceNumber()};
         clone.set<TbRigidbodyComponent>(comp);
 
+        clone.set<UplProjectile>({.lifetime = 15.0f});
+        tb_phys_add_contact_callback(phys_sys, clone.raw_id(),
+                                     projectile_contact);
+
         // Now apply velocity manually
         float3 vel = dir * 15.0f;
+        bodies.SetPosition(body, JPH::Vec3(pos.x, pos.y, pos.z),
+                           JPH::EActivation::Activate);
         bodies.SetLinearAndAngularVelocity(body, JPH::Vec3(vel.x, vel.y, vel.z),
                                            JPH::Vec3(0, 0, 0));
       }
+
       ecs.entity().is_a(mesh).child_of(clone).enable();
     }
   }
@@ -192,9 +234,13 @@ void upl_register_shooter_system(TbWorld *world) {
   struct ShooterAssetSystem {};
   ecs.singleton<ShooterAssetSystem>().set(asset);
 
-  ecs.system<UplShooterComponent, TbTransformComponent>("Shooter System")
+  ecs.system<UplShooter, TbTransformComponent>("Shooter System")
       .kind(EcsOnUpdate)
       .iter(shooter_tick);
+
+  ecs.system<UplProjectile>("Projectile Lifetime System")
+      .kind(EcsOnUpdate)
+      .iter(projectile_lifetime_tick);
 }
 
 void upl_unregister_shooter_system(TbWorld *world) {
