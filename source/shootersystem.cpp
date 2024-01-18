@@ -48,9 +48,9 @@ void projectile_contact(ecs_world_t *world, ecs_entity_t user_e,
   }
 
   // Remove the entity when it collides with anything
-  ecs.defer_begin();
-  user.destruct();
-  ecs.defer_end();
+  // ecs.defer_begin();
+  // user.destruct();
+  // ecs.defer_end();
 }
 
 bool create_shooter_components(ecs_world_t *world, ecs_entity_t e,
