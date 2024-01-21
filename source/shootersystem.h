@@ -2,8 +2,6 @@
 
 #include "simd.h"
 
-#include <SDL2/SDL_atomic.h>
-
 typedef struct TbWorld TbWorld;
 typedef uint64_t ecs_entity_t;
 
