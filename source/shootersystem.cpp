@@ -151,8 +151,8 @@ void shooter_tick(flecs::iter &it, UplShooter *shooters,
   if (input_sys->mouse.left) {
     // TODO: How to convert mouse position into direction relative to player
   }
-  if (input_sys->controller_count > 0) {
-    auto stick = input_sys->controller_states[0].right_stick;
+  if (input_sys->gamepad_count > 0) {
+    auto stick = input_sys->gamepad_states[0].right_stick;
     dir = -tb_f3(stick.x, 0, stick.y);
   }
   if (tb_magf3(dir) < 0.0001f) {
