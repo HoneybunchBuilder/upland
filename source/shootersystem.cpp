@@ -47,10 +47,15 @@ void projectile_contact(ecs_world_t *world, ecs_entity_t user_e,
     return;
   }
 
-  // Remove the entity when it collides with anything
-  // ecs.defer_begin();
-  // user.destruct();
-  // ecs.defer_end();
+  ecs.defer_begin();
+  // Set the user projectile lifetime so that it will begin ticking down
+  // and when it hits 0, be destroyed
+  tb_auto proj = user.get_mut<UplProjectile>();
+  if (proj->lifetime <= 0.0) {
+    proj->lifetime = 1.5f;
+  }
+  user.modified<UplProjectile>();
+  ecs.defer_end();
 }
 
 bool create_shooter_components(ecs_world_t *world, ecs_entity_t e,
@@ -119,18 +124,25 @@ void projectile_lifetime_tick(flecs::iter &it, UplProjectile *projectiles) {
   ZoneScopedN("Projectile Expiration");
   auto ecs = it.world();
 
+  ecs.defer_begin();
   for (auto i : it) {
     auto ent = it.entity(i);
     if (!ent.is_valid()) {
       continue;
     }
     auto &proj = projectiles[i];
+    if (proj.lifetime <= 0.0) {
+      continue;
+    }
 
     proj.lifetime -= it.delta_time();
     if (proj.lifetime <= 0.0f) {
+      proj.lifetime = 0.0f;
+
       ent.destruct();
     }
   }
+  ecs.defer_end();
 }
 
 void shooter_tick(flecs::iter &it, UplShooter *shooters,
@@ -206,7 +218,7 @@ void shooter_tick(flecs::iter &it, UplShooter *shooters,
         TbRigidbodyComponent comp = {body.GetIndexAndSequenceNumber()};
         clone.set<TbRigidbodyComponent>(comp);
 
-        clone.set<UplProjectile>({.lifetime = 15.0f});
+        clone.set<UplProjectile>({.lifetime = 0.0f});
         tb_phys_add_contact_callback(phys_sys, clone.raw_id(),
                                      projectile_contact);
 
