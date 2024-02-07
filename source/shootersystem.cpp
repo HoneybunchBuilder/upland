@@ -235,7 +235,8 @@ void shooter_tick(flecs::iter &it, UplShooter *shooters,
   }
 }
 
-void upl_register_shooter_system(TbWorld *world) {
+extern "C" {
+void upl_register_shooter_sys(TbWorld *world) {
   flecs::world ecs(world->ecs);
 
   TbAssetSystem asset = {
@@ -243,7 +244,9 @@ void upl_register_shooter_system(TbWorld *world) {
       .post_load_fn = post_load_shooter_components,
       .rem_fn = remove_shooter_components,
   };
-  struct ShooterAssetSystem {};
+  struct ShooterAssetSystem {
+    int32_t placeholder;
+  };
   ecs.singleton<ShooterAssetSystem>().set(asset);
 
   ecs.system<UplShooter, TbTransformComponent>("Shooter System")
@@ -255,7 +258,10 @@ void upl_register_shooter_system(TbWorld *world) {
       .iter(projectile_lifetime_tick);
 }
 
-void upl_unregister_shooter_system(TbWorld *world) {
+void upl_unregister_shooter_sys(TbWorld *world) {
   auto ecs = world->ecs;
   (void)ecs;
+}
+
+TB_REGISTER_SYS(upl, shooter, TB_SYSTEM_NORMAL);
 }
