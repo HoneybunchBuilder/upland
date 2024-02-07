@@ -5,11 +5,6 @@
     "*.hlsli": "c",
     "*.hlsl.cs": "c",
     "*.hlsl.m": "c",
-    "renderthread.h": "c",
-    "allocator.h": "c",
-    "stdbool.h": "c",
-    "stddef.h": "c",
-    "tbcommon.h": "c"
   },
   "cmake.configureOnOpen": false,
   "cmake.useCMakePresets": "auto",
