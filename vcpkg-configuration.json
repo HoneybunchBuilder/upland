@@ -8,12 +8,22 @@
   "registries": [
     {
       "kind": "git",
-      "baseline": "d11ac842a330062f28a2bcc674da68ed1862d643",
       "repository": "https://github.com/Honeybunch/vcpkg",
+      "baseline": "79b201d7aab082f74fe780c7901eebc164e53ed7",
       "packages": [
-        "sdl3"
+        "sdl3",
+        "sdl3-mixer"
       ],
-      "reference": "sdl3"
+      "reference": "sdl3-mixer"
+    },
+    {
+      "kind": "git",
+      "repository": "https://github.com/Honeybunch/vcpkg",
+      "baseline": "091260f8e9aee0823274616c5ab56e59d62429c5",
+      "packages": [
+        "ktx"
+      ],
+      "reference": "ktx-4.3.1"
     }
   ]
 }
