@@ -1,6 +1,6 @@
-#include "shootersystem.h"
+#include "projectilecomponent.h"
+#include "shootercomponent.h"
 
-#include "assetsystem.h"
 #include "inputsystem.h"
 #include "meshcomponent.h"
 #include "physicssystem.hpp"
@@ -23,20 +23,6 @@
 #include <flecs.h>
 #include <json.h>
 
-void warp_trigger(ecs_world_t *world, ecs_entity_t user_e,
-                  ecs_entity_t other_e) {
-  flecs::world ecs(world);
-  if (ecs.entity(user_e).has<UplWarp>()) {
-    auto other = ecs.entity(other_e);
-    if (auto other_parent = other.parent()) {
-      if (other_parent.has<UplShooter>()) {
-        // YAY
-        // TODO: Unimplemented
-      }
-    }
-  }
-};
-
 void projectile_contact(ecs_world_t *world, ecs_entity_t user_e,
                         ecs_entity_t other_e) {
   (void)other_e;
@@ -56,68 +42,6 @@ void projectile_contact(ecs_world_t *world, ecs_entity_t user_e,
   }
   user.modified<UplProjectile>();
   ecs.defer_end();
-}
-
-bool create_shooter_components(ecs_world_t *world, ecs_entity_t e,
-                               const char *source_path, const cgltf_node *node,
-                               json_object *extra) {
-  (void)source_path;
-  flecs::world ecs(world);
-
-  if (!node || !extra) {
-    return true;
-  }
-
-  auto json_id = json_object_object_get(extra, "id");
-  if (!json_id) {
-    return true;
-  }
-
-  const char *id_str = json_object_get_string(json_id);
-  auto ent = ecs.entity(e);
-
-  if (SDL_strcmp(id_str, "shooter") == 0) {
-    UplShooter comp = {};
-    if (auto proj_obj = json_object_object_get(extra, "projectile")) {
-      if (auto name_obj = json_object_object_get(proj_obj, "name")) {
-        comp.prefab_name = json_object_get_string(name_obj);
-      }
-    }
-    ent.set<UplShooter>(comp);
-  } else if (SDL_strcmp(id_str, "projectile") == 0) {
-    // Tag the entity as being a projectile
-    ent.add<UplProjectile>();
-  }
-
-  if (auto warp_obj = json_object_object_get(extra, "shooter_tele_target")) {
-    if (auto warp_str = json_object_get_string(warp_obj)) {
-      UplWarp comp = {};
-      comp.target_name = warp_str;
-      ent.set<UplWarp>(comp);
-    }
-  }
-
-  return true;
-}
-
-void post_load_shooter_components(ecs_world_t *world, ecs_entity_t e) {
-  flecs::world ecs(world);
-
-  auto phys_sys = ecs.get_mut<TbPhysicsSystem>();
-  auto entity = ecs.entity(e);
-
-  if (entity.has<UplShooter>()) {
-    auto shooter = entity.get_mut<UplShooter>();
-    shooter->projectile_prefab = ecs.lookup(shooter->prefab_name);
-  }
-  if (entity.has<UplWarp>()) {
-    tb_phys_add_contact_callback(phys_sys, e, warp_trigger);
-  }
-}
-
-void remove_shooter_components(ecs_world_t *world) {
-  flecs::world ecs(world);
-  ecs.remove_all<UplShooter>();
 }
 
 void projectile_lifetime_tick(flecs::iter &it, UplProjectile *projectiles) {
@@ -238,16 +162,6 @@ void shooter_tick(flecs::iter &it, UplShooter *shooters,
 extern "C" {
 void upl_register_shooter_sys(TbWorld *world) {
   flecs::world ecs(world->ecs);
-
-  TbAssetSystem asset = {
-      .add_fn = create_shooter_components,
-      .post_load_fn = post_load_shooter_components,
-      .rem_fn = remove_shooter_components,
-  };
-  struct ShooterAssetSystem {
-    int32_t placeholder;
-  };
-  ecs.singleton<ShooterAssetSystem>().set(asset);
 
   ecs.system<UplShooter, TbTransformComponent>("Shooter System")
       .kind(EcsOnUpdate)
