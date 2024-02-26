@@ -8,24 +8,41 @@ android {
         targetSdkVersion 34
         versionCode 1
         versionName "1.0"
-        externalNativeBuild {
-            cmake {
-                arguments "-DTB_SOURCE_PATH=../toybox", "-DCMAKE_TOOLCHAIN_FILE=$System.env.VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake", "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$System.env.ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake", "-DVCPKG_TARGET_TRIPLET=arm64-android", "-DPROFILE_TRACE=OFF", "-DFINAL=OFF", "-DANDROID_PLATFORM=android-19", "-DANDROID_STL=c++_static"
-                abiFilters 'arm64-v8a'
+    }
+    flavorDimensions = ["abi"]
+    productFlavors {
+        arm64 {
+            dimension "abi"
+            //noinspection ChromeOsAbiSupport
+            ndk.abiFilters 'arm64-v8a'
+            externalNativeBuild {
+                cmake {
+                    arguments "-DTB_SOURCE_PATH=../toybox", "-DCMAKE_TOOLCHAIN_FILE=$System.env.VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake", "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$System.env.ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake", "-DVCPKG_TARGET_TRIPLET=arm64-android", "-DPROFILE_TRACE=OFF", "-DFINAL=OFF", "-DANDROID_PLATFORM=android-28", "-DANDROID_STL=c++_static"
+                }
+            }
+        }
+        x86_64 {
+            dimension "abi"
+            //noinspection ChromeOsAbiSupport
+            ndk.abiFilters 'x86_64'
+            externalNativeBuild {
+                cmake {
+                    arguments "-DTB_SOURCE_PATH=../toybox", "-DCMAKE_TOOLCHAIN_FILE=$System.env.VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake", "-DVCPKG_CHAINLOAD_TOOLCHAIN_FILE=$System.env.ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake", "-DVCPKG_TARGET_TRIPLET=x64-android", "-DPROFILE_TRACE=OFF", "-DFINAL=OFF", "-DANDROID_PLATFORM=android-28", "-DANDROID_STL=c++_static"
+                }
             }
         }
     }
     buildTypes {
         debug {
             sourceSets.main {
-                assets.srcDir "output/arm64/Debug/3rl2i544/arm64-v8a/Debug/assets"
+                assets.srcDir "output/Debug/1jy52o3h/arm64-v8a/Debug/assets"
             }
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             sourceSets.main {
-                assets.srcDir "output/arm64/Debug/3rl2i544/arm64-v8a/Release/assets"
+                assets.srcDir "output/Debug/1jy52o3h/arm64-v8a/Release/assets"
             }
         }
     }
@@ -49,7 +66,7 @@ android {
         }
         externalNativeBuild {
             cmake {
-                buildStagingDirectory "output/arm64"
+                buildStagingDirectory "output"
                 path '../../CMakeLists.txt'
             }
         }
