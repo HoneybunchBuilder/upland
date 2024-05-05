@@ -6,6 +6,8 @@ if(NOT TB_SOURCE_PATH)
   message(FATAL_ERROR "Please specify TB_SOURCE_PATH as a source path to the toybox engine")
 endif()
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 option(FINAL "Compile with the intention to redistribute" OFF)
 set(TB_BUILD_SAMPLES OFF)
 set(TB_BUILD_VIEWER OFF)
