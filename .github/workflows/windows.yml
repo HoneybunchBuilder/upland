@@ -18,8 +18,6 @@ jobs:
         toolsets: [
           {host: [Windows, X64, self-hosted], preset: x64-windows-ninja-llvm},
           {host: [Windows, X64, self-hosted], preset: x64-windows-static-ninja-llvm},
-          {host: [Windows, X64, self-hosted], preset: x64-windows-vs2022-llvm},
-          {host: [Windows, X64, self-hosted], preset: x64-windows-static-vs2022-llvm},
         ]
 
     name: ${{matrix.toolsets.preset}} on ${{matrix.toolsets.host[0]}}

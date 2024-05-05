@@ -10,10 +10,10 @@
       "name": "x64-windows-ninja-llvm",
       "displayName": "x64 Windows Ninja LLVM",
       "generator": "Ninja Multi-Config",
-      "binaryDir": "${sourceDir}/build/x64/windows",
+      "binaryDir": "${sourceDir}/build/x64-windows",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
-        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "VCPKG_TARGET_TRIPLET": "x64-win-llvm",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_RC_COMPILER": "llvm-rc",
@@ -21,6 +21,10 @@
         "FINAL": "OFF",
         "PROFILE_TRACY": "OFF",
         "TB_SOURCE_PATH": "../toybox"
+      },
+      "environment": {
+        "VCPKG_KEEP_ENV_VARS": "PATH",
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/../toybox/triplets/"
       },
       "condition": {
         "type": "equals",
@@ -32,65 +36,19 @@
       "name": "x64-windows-static-ninja-llvm",
       "displayName": "x64 Windows Static Ninja LLVM",
       "generator": "Ninja Multi-Config",
-      "binaryDir": "${sourceDir}/build/x64/windows-static",
+      "binaryDir": "${sourceDir}/build/x64-windows-static",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
-        "VCPKG_TARGET_TRIPLET": "x64-windows-static",
+        "VCPKG_TARGET_TRIPLET": "x64-win-llvm-static",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_RC_COMPILER": "llvm-rc",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "TB_SOURCE_PATH": "../toybox"
       },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
-    },
-    {
-      "name": "x64-windows-vs2022-llvm",
-      "displayName": "x64 Windows VS2022 LLVM",
-      "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/build/x64/windows-clangcl",
-      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-      "toolset": {
-        "value": "ClangCL",
-        "strategy": "set"
-      },
-      "architecture": {
-        "value": "x64",
-        "strategy": "set"
-      },
-      "cacheVariables": {
-        "VCPKG_TARGET_TRIPLET": "x64-windows",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "TB_SOURCE_PATH": "../toybox"
-      },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
-    },
-    {
-      "name": "x64-windows-static-vs2022-llvm",
-      "displayName": "x64 Windows Static VS2022 LLVM",
-      "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/build/x64/windows-static-clangcl",
-      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-      "toolset": {
-        "value": "ClangCL",
-        "strategy": "set"
-      },
-      "architecture": {
-        "value": "x64",
-        "strategy": "set"
-      },
-      "cacheVariables": {
-        "VCPKG_TARGET_TRIPLET": "x64-windows-static",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "TB_SOURCE_PATH": "../toybox"
+      "environment": {
+        "VCPKG_KEEP_ENV_VARS": "PATH",
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/../toybox/triplets/"
       },
       "condition": {
         "type": "equals",
@@ -102,7 +60,7 @@
       "name": "x64-linux-ninja-llvm",
       "displayName": "x64 Linux Ninja LLVM",
       "generator": "Ninja Multi-Config",
-      "binaryDir": "${sourceDir}/build/x64/linux-llvm",
+      "binaryDir": "${sourceDir}/build/x64-linux-llvm",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "x64-linux",
@@ -121,7 +79,7 @@
       "name": "arm64-linux-ninja-llvm",
       "displayName": "arm64 Linux Ninja LLVM",
       "generator": "Ninja Multi-Config",
-      "binaryDir": "${sourceDir}/build/arm64/linux-llvm",
+      "binaryDir": "${sourceDir}/build/arm64-linux-llvm",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "arm64-linux",
@@ -140,7 +98,7 @@
       "name": "arm64-macos-ninja-llvm",
       "displayName": "arm64 macOS Ninja LLVM",
       "generator": "Ninja Multi-Config",
-      "binaryDir": "${sourceDir}/build/arm64/macos-llvm",
+      "binaryDir": "${sourceDir}/build/arm64-macos-llvm",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "arm64-osx",
@@ -160,7 +118,7 @@
       "name": "arm64-macos-xcode-llvm",
       "displayName": "arm64 macOS Xcode LLVM",
       "generator": "Xcode",
-      "binaryDir": "${sourceDir}/build/arm64/macos-xcode-llvm",
+      "binaryDir": "${sourceDir}/build/arm64-macos-xcode-llvm",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "arm64-osx",
@@ -212,42 +170,6 @@
       "name": "release-x64-windows-static-ninja-llvm",
       "displayName": "Release",
       "configurePreset": "x64-windows-static-ninja-llvm",
-      "configuration": "Release"
-    },
-    {
-      "name": "debug-x64-windows-vs2022-llvm",
-      "displayName": "Debug",
-      "configurePreset": "x64-windows-vs2022-llvm",
-      "configuration": "Debug"
-    },
-    {
-      "name": "relwithdebinfo-x64-windows-vs2022-llvm",
-      "displayName": "RelWithDebInfo",
-      "configurePreset": "x64-windows-vs2022-llvm",
-      "configuration": "RelWithDebInfo"
-    },
-    {
-      "name": "release-x64-windows-vs2022-llvm",
-      "displayName": "Release",
-      "configurePreset": "x64-windows-vs2022-llvm",
-      "configuration": "Release"
-    },
-    {
-      "name": "debug-x64-windows-static-vs2022-llvm",
-      "displayName": "Debug",
-      "configurePreset": "x64-windows-static-vs2022-llvm",
-      "configuration": "Debug"
-    },
-    {
-      "name": "relwithdebinfo-x64-windows-static-vs2022-llvm",
-      "displayName": "RelWithDebInfo",
-      "configurePreset": "x64-windows-static-vs2022-llvm",
-      "configuration": "RelWithDebInfo"
-    },
-    {
-      "name": "release-x64-windows-static-vs2022-llvm",
-      "displayName": "Release",
-      "configurePreset": "x64-windows-static-vs2022-llvm",
       "configuration": "Release"
     },
     {
